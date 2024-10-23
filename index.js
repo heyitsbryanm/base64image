@@ -6,6 +6,7 @@ const port = process.env.PORT || 3000;
 
 app.get('/image', (req, res) => {
     // Get the base64 string from query parameter, decode it, and fix spaces
+    console.log('req.query.data is: ', req.query.data);
     const base64Image = decodeURIComponent(req.query.data).replace(/ /g, '+');
     console.log('base64Image:', base64Image);
     
