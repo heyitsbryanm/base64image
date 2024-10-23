@@ -1,10 +1,12 @@
 const express = require('express');
 const app = express();
-const port = 3000;
+
+// Use Heroku's dynamic port or fallback to 3000
+const port = process.env.PORT || 3000;
 
 app.get('/image', (req, res) => {
-    // Get the base64 string from query parameter
-    const base64Image = decodeURIComponent(req.query.data);
+    // Get the base64 string from query parameter, decode it, and fix spaces
+    const base64Image = decodeURIComponent(req.query.data).replace(/ /g, '+');
     
     if (!base64Image) {
         return res.status(400).send('No image data provided');
@@ -12,8 +14,7 @@ app.get('/image', (req, res) => {
 
     try {
         // Remove potential "data:image/png;base64," prefix if it exists
-        const base64Data = base64Image.replace(/^data:image\/png;base64,/, '').replaceAll(' ', '+');
-        console.log(base64Data);
+        const base64Data = base64Image.replace(/^data:image\/png;base64,/, '');
         
         // Convert base64 to buffer
         const imageBuffer = Buffer.from(base64Data, 'base64');
@@ -27,10 +28,11 @@ app.get('/image', (req, res) => {
         // Send the image
         res.send(imageBuffer);
     } catch (error) {
+        console.error('Error processing image:', error);
         res.status(400).send('Invalid base64 image data');
     }
 });
 
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+    console.log(`Server running on port ${port}`);
 });
