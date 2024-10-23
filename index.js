@@ -7,10 +7,12 @@ app.get('/image', (req, res) => {
     let base64Image;
     if (req.query.base64) {
         // Handle case where URL was split into data=data:image/png&base64=...
+        console.log('base64:', req.query.base64);
         base64Image = `data:image/png;base64,${req.query.base64}`;
     } else {
         // Handle normal case where everything is in the data parameter
         base64Image = decodeURIComponent(req.query.data).replace(/ /g, '+');
+        console.log('base64:', base64Image);
     }
     
     if (!base64Image) {
@@ -18,11 +20,12 @@ app.get('/image', (req, res) => {
     }
 
     try {
-        // Remove data URI prefix if it exists (now handles both cases)
+        // Remove data URI prefix if it exists (now handles both cases where imgix replaces `;` with `&` and where it doesn't)
         const base64Data = base64Image
             .replace(/^data:image\/png;base64,/, '')
             .replace(/^data:image\/png&base64,/, '');
         
+            console.log('base64Data:', base64Data);
         // Convert base64 to buffer
         const imageBuffer = Buffer.from(base64Data, 'base64');
         
