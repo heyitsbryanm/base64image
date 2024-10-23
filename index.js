@@ -1,24 +1,28 @@
 const express = require('express');
 const app = express();
-
-// Use Heroku's dynamic port or fallback to 3000
 const port = process.env.PORT || 3000;
 
 app.get('/image', (req, res) => {
-    // Get the base64 string from query parameter, decode it, and fix spaces
-    console.log('req.query.data is: ', req.query.data);
-    const base64Image = decodeURIComponent(req.query.data).replace(/ /g, '+');
-    console.log('base64Image:', base64Image);
+    // Get the base64 string and handle potential URL splitting
+    let base64Image;
+    if (req.query.base64) {
+        // Handle case where URL was split into data=data:image/png&base64=...
+        base64Image = `data:image/png;base64,${req.query.base64}`;
+    } else {
+        // Handle normal case where everything is in the data parameter
+        base64Image = decodeURIComponent(req.query.data).replace(/ /g, '+');
+    }
     
     if (!base64Image) {
         return res.status(400).send('No image data provided');
     }
 
     try {
-        // Remove potential "data:image/png;base64," prefix if it exists
-        const base64Data = base64Image.replace(/^data:image\/png;base64,/, '');
+        // Remove data URI prefix if it exists (now handles both cases)
+        const base64Data = base64Image
+            .replace(/^data:image\/png;base64,/, '')
+            .replace(/^data:image\/png&base64,/, '');
         
-        console.log('base64Image:', base64Image);
         // Convert base64 to buffer
         const imageBuffer = Buffer.from(base64Data, 'base64');
         
